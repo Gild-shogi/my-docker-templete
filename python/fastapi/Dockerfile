@@ -9,13 +9,14 @@ RUN pip install uv
 
 # Copy dependency files
 COPY pyproject.toml /app/
+COPY uv.lock /app/
 
 # Install dependencies
-RUN uv sync
+RUN uv sync --frozen --no-dev
 
 # Copy the rest of the application
-COPY . /app/
+COPY ./app /app/app
 
-CMD ["uv", "run", "jupyter", "lab", "--port", "8000", "--allow-root", "--ip=0.0.0.0", "--LabApp.token=''"]
+CMD ["uv", "run", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
 
 EXPOSE 8000
