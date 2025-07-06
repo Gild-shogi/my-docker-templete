@@ -1,23 +1,21 @@
-FROM python:3.11-slim
+FROM python:3.13-slim
 
 ENV PYTHONBUFFERED=1
 
 WORKDIR /app
 
-# python & gcc settings
-RUN apt update && apt install -y \
-    tzdata \
-    curl \
-    gcc \
-    && ln -sf /usr/share/zoneinfo/Asia/Tokyo /etc/localtime \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
+# Install uv
+RUN pip install uv
 
-# install python packages
-COPY requirements.txt /app
-COPY pyproject.toml /app
-RUN pip install --upgrade pip \
-    && pip install --upgrade setuptools \
-    && pip install -r requirements.txt
+# Copy dependency files
+COPY pyproject.toml /app/
+
+# Install dependencies
+RUN uv sync
+
+# Copy the rest of the application
+COPY . /app/
 
 CMD ["jupyter", "lab", "--port", "8000", "--allow-root", "--ip=0.0.0.0", "--LabApp.token=''"]
+
+EXPOSE 8000
